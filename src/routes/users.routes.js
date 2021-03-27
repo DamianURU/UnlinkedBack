@@ -1,113 +1,80 @@
 const { Router } = require("express");
 const routes = Router();
 const Users = require("../models/users");
-const bycrypt = require("bcryptjs");
-const jsonwebtoken = require("jsonwebtoken");
-const { verifyToken, refreshToken } = require("../config/auth");
+const bcrypt = require("bcryptjs");
+const { createToken, verifyToken } = require("../config/auth");
+require("dotenv").config();
 
-// const getIdByemail =(idByEmail)=>{
-//     return new Promise((resolve,reject) =>{
-//         pool.query('SELECT * FROM users WERHE email =$1',[idByEmail], (err,rows)=>{
-//             if(err)reject(err)
-//             resolve(rows)
-//         });
-//     });
-// }
+routes.post("/api/login", async (req, res) => {
+  const user = await Users.getByEmail(req.body.email);
+  if (user === undefined) return res.sendStatus(500);
+  const equals = bcrypt.compareSync(req.body.password, user.password);
+  if (!equals) return res.sendStatus(500);
+  const data = {
+    id: user.usersid,
+    username: user.username,
+    email: user.email,
+  };
+  createToken(req, res, data);
+});
 
-routes.post("/register", async (req, res) => {
-  let termo = [];
+routes.post("/api/create", async (req, res) => {
   const verificationEmail = await Users.getByEmail(req.body.email);
-  const pass = req.body.password;
-  console.log(req.body);
-  if (pass.length < 4) {
-    res.json({ error: "ERROr, la contrasena debe tenr mas de 4 caracteres" });
-  }
-  if (termo.length < 0) {
-    res.json({ error: "muchos erroeres" });
-  }
-  if (verificationEmail === undefined) {
-    console.log(verificationEmail);
-    req.body.password = bycrypt.hashSync(req.body.password, 10);
-    const result = await Users.insert(req.body);
-    console.log("si va para el baile");
-    res.status(200).send({ message: "usuario creado " });
-  } else {
-    console.log("hola");
-    res.status(500).send({ error: "ERROR, este correo ya esta registrado" });
-  }
+  if (req.body.password.length < 8)
+    return res.json({ error: "Password must be more than 8 characters long" });
+  if (req.body.username.length < 2)
+    return res.json({ error: "Username must be more than 2 characters long" });
+  if (verificationEmail !== undefined)
+    return res.status(500).send({ error: "Email already in use" });
+  req.body.password = bcrypt.hashSync(req.body.password, 10);
+  const result = await Users.insert(req.body);
+  if (result != null) return res.sendStatus(200);
+  res.sendStatus(500);
 });
 
-routes.post("/login", async (req, res) => {
-  const user = await Users.getByEmail(req.body.email);
-
-  if (user === undefined) {
-    res.status(500).json({
-      error: "ERROR, email or password not found",
-    });
-  } else {
-    console.log(user);
-    const equals = bycrypt.compareSync(req.body.password, user.password);
-    if (!equals) {
-      res.status(500).json({
-        error: "ERROR, email or password not found  2",
-      });
-    } else {
-      const token = jsonwebtoken.sign({ id: user.usersid }, "eltermo", {
-        expiresIn: 60 * 600,
-      });
-
-      res.status(200).json({ auth: true, token: token });
-    }
-  }
-});
-routes.get("/me", verifyToken, (req, res, next) => {
+routes.post("/api", verifyToken, async (req, res) => {
+  console.log(req.token.data.id);
   console.log("paso el usuario");
+  res.json({ message: "estas en la api" });
 });
 
-// const createToken = (user) =>{
-//     console.log('hola')
-//     let payload ={
-//         userId: user.id,
-//         createdAT:moment().unix(),
-//         expiresAt:moment().add(1,'day').unix()
+routes.post("/api/modify", verifyToken, async (req, res) => {
+  console.log(req.token.data.id);
+  // const data = {
+  //   id: user.id,
+  //   username: user.username,
+  //   email: user.email,
+  // };
 
-//     }
-//     console.log(jwt.encode(payload,'Token-Auth'))
-//     return jwt.encode(payload,'Token-Auth')
-// }
-
-routes.post("/login", async (req, res) => {
-  const user = await Users.getByEmail(req.body.email);
-
-  if (user === undefined) {
-    res.json({
-      error: "ERROR, email or password not found",
-    });
+  if (req.body.password.length < 8) {
+    res.json({ error: "Password must be more than 8 characters long" });
+  }
+  if (req.body.username.length < 2) {
+    res.json({ error: "Username must be more than 2 characters long" });
+  }
+  req.body.password = bcrypt.hashSync(req.body.password, 10);
+  const data = {
+    email: req.body.email,
+    password: req.body.password,
+    name: req.body.name,
+    username: req.body.username,
+    id: req.token.data.id,
+  };
+  console.log(data);
+  const result = await Users.update(data);
+  if (result != null) {
+    res.sendStatus(200);
   } else {
-    const equals = bycrypt.compareSync(req.body.password, user.password);
-    if (!equals) {
-      res.json({
-        error: "ERROR, email or password not found  2",
-      });
-    } else {
-      const token = jwt.sign({ user: userid }, "eltermo", {
-        expiresIn: 60 * 60,
-      });
-
-      res.json({ auth: true, token: token });
-    }
+    res.sendStatus(405);
   }
 });
 
-// router.use(configjwt.checkToken);
+routes.post("/api/delete");
 
-// router.get('/mainUser',(req,res)=>{
-//     Users.getById(req.userId)
-//     .then(rows=>{
-//         res.json(rows);
-//     })
-//     .catch(err=>console.log(err));
-// })
-// router.post('/token',checkToken)
+routes.get("/api/logout", verifyToken, async (req, res) => {});
+
+routes.get("/api/test", async (req, res) => {
+  res.sendStatus(200);
+});
 
 module.exports = routes;

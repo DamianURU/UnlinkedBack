@@ -1,46 +1,51 @@
-const jsonwebtoken = require("jsonwebtoken");
-const pool = require("../database");
+const jwt = require("jsonwebtoken");
 const { getById } = require("../models/users");
-function verifyToken(req, res, next) {
-  // const token = req.headers['Authorization'];
-  var token = req.headers.authorization.split(" ")[1];
-  if (!token) {
-    console.log(token);
-    return res.status(401).json({
-      auth: false,
-      message: "no token provided",
-    });
-  }
-  console.log(token);
-  const decode = jsonwebtoken.verify(token, "eltermo");
-  console.log(decode.id);
-  req.userid = decode.id;
-  res.status(200).json("activo con el token");
-  console.log(decode);
-  next();
+require("dotenv").config();
+
+function createToken(req, res, data) {
+  jwt.sign(
+    { data },
+    process.env.SECRET,
+    {
+      expiresIn: 60 * 60 * 24,
+    },
+    (err, token) => {
+      if (err) res.sendStatus(403).json(err);
+      res.set("Authorization", "Bearer " + token).sendStatus(200);
+    }
+  );
 }
 
-async function refreshToken(req, res) {
-  var refreshTk = req.headers.authorization.split(" ")[1];
-  if (!refreshTk)
-    return res.status(402).json({
-      refresh: false,
-    });
-  const usertk = req.userid;
-
-  try {
-    const verfi = jsonwebtoken.verify(refreshTk, "eltermo");
-    const userRf = await getById(usertk);
-  } catch (error) {
-    console.log(error);
-    return res
-      .status(403)
-      .json({ refresh: null, messages: "que te puedo decir pana no funciona" });
-  }
-  const token = jsonwebtoken.sign({ id: userRf.usersid }, "eltermo", {
-    expiresIn: 60 * 60,
+async function verifyToken(req, res, next) {
+  var headers = req.headers["authorization"];
+  if (headers === undefined) return res.sendStatus(403);
+  var data = headers.split(" ");
+  jwt.verify(data[1], process.env.SECRET, (err, token) => {
+    if (err) {
+      res.sendStatus(403);
+    } else {
+      req.token = token;
+      next();
+    }
   });
-  res.json({ auth: true, token: token });
 }
 
-module.exports = { verifyToken, refreshToken };
+// function refreshToken(req, res, next) {
+//   var header = req.headers["authorization"];
+//   if (typeof header !== "undefined") {
+//     token = header.split(" ");
+//     jwt.verify(token[1], process.env.SECRET, function (err, decoded) {
+//       if (err) {
+//         res.err()
+//       }
+//       else {
+//     next();
+//       }
+//     });
+
+//   } else {
+//     return res.sendStatus(403);
+//   }
+// }
+
+module.exports = { verifyToken, createToken };

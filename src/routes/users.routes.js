@@ -58,12 +58,6 @@ routes.post("/api/verify", async (req, res) => {
     });
 });
 
-routes.post("/api", verifyToken, async (req, res) => {
-  console.log(req.token.data.id);
-  console.log("paso el usuario");
-  res.json({ message: "estas en la api" });
-});
-
 routes.post("/api/modify", verifyToken, async (req, res) => {
   console.log(req.token.data.id);
   // const data = {
@@ -101,6 +95,12 @@ routes.get("/api/logout", verifyToken, async (req, res) => {});
 
 routes.get("/api/test", async (req, res) => {
   res.sendStatus(200);
+});
+
+routes.post("/api", verifyToken, async (req, res) => {
+  console.log(req.token.data.id);
+  console.log("paso el usuario");
+  res.json({ message: "estas en la api" });
 });
 
 module.exports = routes;

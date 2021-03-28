@@ -31,7 +31,6 @@ routes.post("/api/create", async (req, res) => {
     return res.json({ error: "Username must be more than 2 characters long" });
   if (verificationEmail !== undefined)
     return res.status(500).send({ error: "Email already in use" });
-  req.body.password = bcrypt.hashSync(req.body.password, 10);
   client.verify
     .services(process.env.SERVICE_SID)
     .verifications.create({
@@ -41,22 +40,23 @@ routes.post("/api/create", async (req, res) => {
     .then((data) => {
       res.sendStatus(200).send(data);
     });
-  if (await verify(req, res)) const result = await Users.insert(req.body);
-  if (result != null) return res.sendStatus(200);
   res.sendStatus(500);
 });
 
-async function verify(req, res) {
+routes.post("/api/verify", async (req, res) => {
+  req.body.password = bcrypt.hashSync(req.body.password, 10);
   client.verify
     .services(process.env.SERVICE_SID)
-    .verificationChecks.create({
+    .verifications.create({
       to: `+${req.body.phone}`,
       code: req.body.code,
     })
     .then((data) => {
-      res.status(200).send(data);
+      if (data.status == "approved" ) const result = await Users.insert(req.body);
+      if (result != null) return res.sendStatus(200);
+      res.sendStatus(500);
     });
-}
+});
 
 routes.post("/api", verifyToken, async (req, res) => {
   console.log(req.token.data.id);

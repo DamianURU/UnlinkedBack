@@ -10,6 +10,7 @@ const client = require("twilio")(
   process.env.AUTH_TOKEN
 );
 
+//login
 routes.post("/api/login", async (req, res) => {
   const user = await Users.getByEmail(req.body.email);
   if (user === undefined) return res.sendStatus(500);
@@ -22,7 +23,7 @@ routes.post("/api/login", async (req, res) => {
   };
   createToken(req, res, data);
 });
-
+//register
 routes.post("/api/create", async (req, res) => {
   const verificationEmail = await Users.getByEmail(req.body.email);
   if (req.body.password.length < 8)
@@ -42,7 +43,7 @@ routes.post("/api/create", async (req, res) => {
     });
   res.sendStatus(500);
 });
-
+//verify step
 routes.post("/api/verify", async (req, res) => {
   req.body.password = bcrypt.hashSync(req.body.password, 10);
   client.verify
@@ -57,7 +58,7 @@ routes.post("/api/verify", async (req, res) => {
       res.sendStatus(500);
     });
 });
-
+//modify profile
 routes.post("/api/modify", verifyToken, async (req, res) => {
   console.log(req.token.data.id);
   // const data = {
@@ -91,12 +92,8 @@ routes.post("/api/modify", verifyToken, async (req, res) => {
 
 routes.post("/api/delete");
 
-routes.get("/api/logout", verifyToken, async (req, res) => {});
 
-routes.get("/api/test", async (req, res) => {
-  res.sendStatus(200);
-});
-
+//main screen y verify
 routes.post("/api", verifyToken, async (req, res) => {
   console.log(req.token.data.id);
   console.log("paso el usuario");

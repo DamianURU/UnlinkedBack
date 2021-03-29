@@ -46,15 +46,18 @@ routes.post("/api/create", async (req, res) => {
 //verify step
 routes.post("/api/verify", async (req, res) => {
   req.body.password = bcrypt.hashSync(req.body.password, 10);
-  client.verify
+  await client.verify
     .services(process.env.SERVICE_SID)
     .verifications.create({
       to: `+${req.body.phone}`,
       code: req.body.code,
     })
     .then((data) => {
-      if (data.status == "approved" ) const result = await Users.insert(req.body);
-      if (result != null) return res.sendStatus(200);
+      if (data.status == "approved") {
+        const result = Users.insert(req.body);
+        if (result != null) return res.sendStatus(200);
+      }
+
       res.sendStatus(500);
     });
 });
@@ -91,7 +94,6 @@ routes.post("/api/modify", verifyToken, async (req, res) => {
 });
 
 routes.post("/api/delete");
-
 
 //main screen y verify
 routes.post("/api", verifyToken, async (req, res) => {

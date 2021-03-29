@@ -17,6 +17,7 @@ app.use(morgan("dev"));
 //app.use(express.json());
 
 app.get("/", async (req, res) => {
+  res.sendStatus(200);
   console.log("log");
 });
 

@@ -16,6 +16,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(morgan("dev"));
 //app.use(express.json());
 
+app.get("/", async (req, res) => {
+  console.log("log");
+});
+
 //rutas
 app.use(require("./routes/users.routes"));
 

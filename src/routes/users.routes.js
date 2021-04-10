@@ -5,11 +5,11 @@ const bcrypt = require("bcryptjs");
 const { createToken, verifyToken } = require("../config/auth");
 const { verify } = require("jsonwebtoken");
 require("dotenv").config();
+
 const client = require("twilio")(
   process.env.ACCOUNT_SID,
   process.env.AUTH_TOKEN
 );
-
 //login
 routes.post("/api/login", async (req, res) => {
   const user = await Users.getByEmail(req.body.email);
@@ -26,29 +26,31 @@ routes.post("/api/login", async (req, res) => {
 //register
 routes.post("/api/create", async (req, res) => {
   const verificationEmail = await Users.getByEmail(req.body.email);
+  const verificationPhone = await Users.getByPhone(req.body.phone);
   if (req.body.password.length < 8)
     return res.json({ error: "Password must be more than 8 characters long" });
-  if (req.body.username.length < 2)
-    return res.json({ error: "Username must be more than 2 characters long" });
   if (verificationEmail !== undefined)
     return res.status(500).send({ error: "Email already in use" });
+  if (verificationPhone !== undefined)
+    return res.status(500).send({ error: "Phone Number already in use" });
   client.verify
     .services(process.env.SERVICE_SID)
     .verifications.create({
       to: `+${req.body.phone}`,
       channel: "sms",
     })
-    .then((data) => {
-      res.sendStatus(200).send(data);
+    .then((data, err) => {
+      if (err) res.sendStatus(500).statusMessage(err);
+      else res.sendStatus(200).statusMessage(data);
     });
-  res.sendStatus(500);
+  res.sendStatus(200);
 });
 //verify step
 routes.post("/api/verify", async (req, res) => {
   req.body.password = bcrypt.hashSync(req.body.password, 10);
   await client.verify
     .services(process.env.SERVICE_SID)
-    .verifications.create({
+    .verificationChecks.create({
       to: `+${req.body.phone}`,
       code: req.body.code,
     })
@@ -57,19 +59,11 @@ routes.post("/api/verify", async (req, res) => {
         const result = Users.insert(req.body);
         if (result != null) return res.sendStatus(200);
       }
-
       res.sendStatus(500);
     });
 });
 //modify profile
 routes.post("/api/modify", verifyToken, async (req, res) => {
-  console.log(req.token.data.id);
-  // const data = {
-  //   id: user.id,
-  //   username: user.username,
-  //   email: user.email,
-  // };
-
   if (req.body.password.length < 8) {
     res.json({ error: "Password must be more than 8 characters long" });
   }
@@ -78,7 +72,6 @@ routes.post("/api/modify", verifyToken, async (req, res) => {
   }
   req.body.password = bcrypt.hashSync(req.body.password, 10);
   const data = {
-    email: req.body.email,
     password: req.body.password,
     name: req.body.name,
     username: req.body.username,
@@ -93,7 +86,7 @@ routes.post("/api/modify", verifyToken, async (req, res) => {
   }
 });
 
-routes.post("/api/delete");
+routes.post("/api/delete", verifyToken, async (req, res) => {});
 
 //main screen y verify
 routes.post("/api", verifyToken, async (req, res) => {

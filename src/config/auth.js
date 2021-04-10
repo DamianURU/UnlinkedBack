@@ -11,7 +11,7 @@ function createToken(req, res, data) {
     },
     (err, token) => {
       if (err) res.sendStatus(403).json(err);
-      res.set("Authorization", "Bearer " + token).sendStatus(200);
+      res.json({ token: token }).sendStatus(200);
     }
   );
 }

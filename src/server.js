@@ -18,7 +18,6 @@ app.use(morgan("dev"));
 
 app.get("/", async (req, res) => {
   res.sendStatus(200);
-  console.log("log");
 });
 
 //rutas

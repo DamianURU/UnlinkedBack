@@ -29,11 +29,10 @@ const insert = ({ email, password, name, phone }) => {
 //obtener usuarios por su email
 
 const getByEmail = (email) => {
-  console.log(email);
   return new Promise((resolve, reject) => {
     pool.query("SELECT * FROM users WHERE email = $1", [email], (err, rows) => {
       if (err) reject(err);
-      resolve(rows);
+      resolve(rows.rows[0]);
     });
   });
 };

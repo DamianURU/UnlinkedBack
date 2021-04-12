@@ -66,7 +66,7 @@ const getByPhone = (phone) => {
 
 const getById = (pId) => {
   return new Promise((resolve, reject) => {
-    pool.query("SELECT * FROM users WERHE id =$1", [pId], (err, rows) => {
+    pool.query("SELECT * FROM users WHERE id =$1", [pId], (err, rows) => {
       if (err) reject(err);
       resolve(rows);
     });

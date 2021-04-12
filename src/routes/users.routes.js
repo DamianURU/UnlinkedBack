@@ -100,8 +100,14 @@ routes.post("/api", verifyToken, async (req, res) => {
 });
 
 //obtener
-routes.post("/api/get", verifyToken, async (req, res) => {
+routes.post("/api/all", verifyToken, async (req, res) => {
   const id = await Users.getAllId();
+  res.json({ data: id.rows });
+});
+
+//obtener mis datos
+routes.post("/api/get", verifyToken, async (req, res) => {
+  const id = await Users.getById(req.body.token.data.id);
   res.json({ data: id.rows });
 });
 

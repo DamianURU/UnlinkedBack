@@ -105,9 +105,4 @@ routes.post("/api/get", verifyToken, async (req, res) => {
   res.json({ data: id.rows });
 });
 
-routes.post("/test", verifyToken, async (req, res) => {
-  fillData(req.body);
-  res.sendStatus(200);
-});
-
 module.exports = routes;

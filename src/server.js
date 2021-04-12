@@ -23,5 +23,6 @@ app.get("/", async (req, res) => {
 //rutas
 app.use(require("./routes/users.routes"));
 app.use(require("./routes/connects.routes"));
+app.use(require("./routes/posts.routes"));
 
 module.exports = app;

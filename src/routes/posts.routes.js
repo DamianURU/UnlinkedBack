@@ -1,7 +1,7 @@
 const { Router } = require("express");
 const routes = Router();
 const Posts = require("../models/posts");
-const Connects = require("../models/Connects");
+const Connects = require("../models/connects");
 const { verifyToken } = require("../config/auth");
 
 //obtener posts de amigos

@@ -1,6 +1,6 @@
 const { Router } = require("express");
 const routes = Router();
-const Connects = require("../models/Connects");
+const Connects = require("../models/connects");
 const { verifyToken } = require("../config/auth");
 
 //AGREGAR CONNECT

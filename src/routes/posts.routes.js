@@ -2,9 +2,7 @@ const { Router } = require("express");
 const routes = Router();
 const Posts = require("../models/posts");
 const Connects = require("../models/Connects");
-const bcrypt = require("bcryptjs");
-const { createToken, verifyToken } = require("../config/auth");
-require("dotenv").config();
+const { verifyToken } = require("../config/auth");
 
 //obtener posts de amigos
 routes.post("/api/posts", verifyToken, async (req, res) => {

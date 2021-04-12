@@ -2,7 +2,6 @@ const { Router } = require("express");
 const routes = Router();
 const Connects = require("../models/Connects");
 const { verifyToken } = require("../config/auth");
-require("dotenv").config();
 
 //AGREGAR CONNECT
 routes.post("/api/connect/add", verifyToken, async (req, res) => {

@@ -3,13 +3,13 @@ const routes = Router();
 const Users = require("../models/users");
 const bcrypt = require("bcryptjs");
 const { createToken, verifyToken } = require("../config/auth");
-const { verify } = require("jsonwebtoken");
 require("dotenv").config();
 
 const client = require("twilio")(
   process.env.ACCOUNT_SID,
   process.env.AUTH_TOKEN
 );
+
 //login
 routes.post("/api/login", async (req, res) => {
   const user = await Users.getByEmail(req.body.email);
@@ -17,12 +17,13 @@ routes.post("/api/login", async (req, res) => {
   const equals = bcrypt.compareSync(req.body.password, user.password);
   if (!equals) return res.sendStatus(500);
   const data = {
-    id: user.usersid,
-    username: user.username,
+    id: user.profile_id,
+    username: user.name,
     email: user.email,
   };
   createToken(req, res, data);
 });
+
 //register
 routes.post("/api/create", async (req, res) => {
   const verificationEmail = await Users.getByEmail(req.body.email);
@@ -45,6 +46,7 @@ routes.post("/api/create", async (req, res) => {
     });
   res.sendStatus(200);
 });
+
 //verify step
 routes.post("/api/verify", async (req, res) => {
   req.body.password = bcrypt.hashSync(req.body.password, 10);
@@ -62,23 +64,25 @@ routes.post("/api/verify", async (req, res) => {
       res.sendStatus(500);
     });
 });
+
 //modify profile
 routes.post("/api/modify", verifyToken, async (req, res) => {
   if (req.body.password.length < 8) {
     res.json({ error: "Password must be more than 8 characters long" });
   }
-  if (req.body.username.length < 2) {
-    res.json({ error: "Username must be more than 2 characters long" });
+  if (req.body.name.length < 2) {
+    res.json({ error: "Name must be more than 2 characters long" });
   }
+
   req.body.password = bcrypt.hashSync(req.body.password, 10);
-  const data = {
-    password: req.body.password,
-    name: req.body.name,
-    username: req.body.username,
+
+  const unfilledData = {
+    body: req.body,
     id: req.token.data.id,
   };
-  console.log(data);
-  const result = await Users.update(data);
+
+  // const data = fillData(unfilledData);
+  const result = await Users.update(unfilledData);
   if (result != null) {
     res.sendStatus(200);
   } else {
@@ -90,9 +94,20 @@ routes.post("/api/delete", verifyToken, async (req, res) => {});
 
 //main screen y verify
 routes.post("/api", verifyToken, async (req, res) => {
-  console.log(req.token.data.id);
-  console.log("paso el usuario");
-  res.json({ message: "estas en la api" });
+  const token = req.token;
+  console.log(token.data);
+  res.json({ message: "hola" });
+});
+
+//obtener
+routes.post("/api/get", verifyToken, async (req, res) => {
+  const id = await Users.getAllId();
+  res.json({ data: id.rows });
+});
+
+routes.post("/test", verifyToken, async (req, res) => {
+  fillData(req.body);
+  res.sendStatus(200);
 });
 
 module.exports = routes;

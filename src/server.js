@@ -22,5 +22,6 @@ app.get("/", async (req, res) => {
 
 //rutas
 app.use(require("./routes/users.routes"));
+app.use(require("./routes/connects.routes"));
 
 module.exports = app;

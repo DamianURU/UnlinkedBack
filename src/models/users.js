@@ -4,7 +4,7 @@ const pool = require("../database");
 const getAll = () => {
   return new Promise((resolve, reject) => {
     pool.query("SELECT * FROM profiles", (err, rows) => {
-      console.logs(rows)
+      console.log(rows)
       if (err) reject(err);
       resolve(rows);
     });

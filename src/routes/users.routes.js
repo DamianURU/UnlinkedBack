@@ -111,4 +111,8 @@ routes.post("/api/get", verifyToken, async (req, res) => {
   res.json({ data: id.rows });
 });
 
+routes.post("/test", async (req, res) => {
+  const id = await Users.getAll();
+});
+
 module.exports = routes;

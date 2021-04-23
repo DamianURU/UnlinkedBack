@@ -37,7 +37,7 @@ routes.post("/api/create", async (req, res) => {
   client.verify
     .services(process.env.SERVICE_SID)
     .verifications.create({
-      to: `+${req.body.phone}`,
+      to: `${req.body.phone}`,
       channel: "sms",
     })
     .then((data, err) => {

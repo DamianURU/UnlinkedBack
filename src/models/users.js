@@ -45,6 +45,7 @@ const getByEmail = (email) => {
       [email],
       (err, rows) => {
         if (err) reject(err);
+        console.log(rows)
         resolve(rows.rows[0]);
       }
     );

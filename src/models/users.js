@@ -4,10 +4,29 @@ const pool = require("../database");
 const getAll = () => {
   return new Promise((resolve, reject) => {
     pool.query("SELECT * FROM profiles", (err, rows) => {
-      console.log(rows)
+      console.log(rows);
       if (err) reject(err);
       resolve(rows);
     });
+  });
+};
+
+const searchUser = (search) => {
+  return new Promise((resolve, reject) => {
+    pool.query(
+      "SELECT profile_id, name FROM profiles WHERE name LIKE '%" +
+        search +
+        "%' OR name LIKE '" +
+        search +
+        "%'OR name LIKE '%" +
+        search +
+        "'",
+      (err, rows) => {
+        console.log(rows);
+        if (err) reject(err);
+        resolve(rows.rows);
+      }
+    );
   });
 };
 
@@ -16,6 +35,7 @@ const getAllId = () => {
   return new Promise((resolve, reject) => {
     pool.query("SELECT profile_id FROM profiles", (err, rows) => {
       if (err) reject(err);
+      console.log(rows);
       resolve(rows);
     });
   });
@@ -46,7 +66,6 @@ const getByEmail = (email) => {
       [email],
       (err, rows) => {
         if (err) reject(err);
-        console.log(rows)
         resolve(rows.rows[0]);
       }
     );
@@ -68,25 +87,27 @@ const getByPhone = (phone) => {
 
 const getById = (pId) => {
   return new Promise((resolve, reject) => {
-    pool.query("SELECT * FROM users WHERE id =$1", [pId], (err, rows) => {
-      if (err) reject(err);
-      resolve(rows);
-    });
+    pool.query(
+      "SELECT * FROM profiles WHERE profile_id =$1",
+      [pId],
+      (err, rows) => {
+        if (err) reject(err);
+        console.log(rows.rows[0]);
+        resolve(rows.rows[0]);
+      }
+    );
   });
 };
 
 const update = (data) => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "UPDATE profiles SET education = $1, skills = $2, jobs = $3, job_date_start = $4, name = $5, email= $6, password = $7, country = $8, postal_code = $9, age = $10 WHERE profile_id = $11",
+      "UPDATE profiles SET education = $1, skills = $2, name = $3, password = $4, country = $5, postal_code = $6, age = $7 WHERE profile_id = $8",
       [
         data.body.education,
         data.body.skills,
-        data.body.jobs,
-        data.body.job_date_start,
         data.body.name,
-        data.body.email,
-        data.body.password,
+        data.body.pass,
         data.body.country,
         data.body.postal_code,
         data.body.age,
@@ -130,4 +151,5 @@ module.exports = {
   getByPhone,
   update,
   deleteUser,
+  searchUser,
 };

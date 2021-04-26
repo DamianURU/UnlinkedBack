@@ -35,41 +35,26 @@ const getAllUserPosts = (id) => {
 };
 
 //todos los posts de connects
-const getAllConnectPosts = (connectID) => {
-  POSTSID = connectID;
-  //convertir profile_id=X a (X,Y,W,Z)
-  return new Promise((resolve, reject) => {
-    pool.query(
-      "SELECT * FROM posts WHERE profile_id in " + POSTSID,
+const getAllConnectPosts = (data) => {
+  let SQL = " profile_id = " + data[0].user_two_id;
 
-      (err, rows) => {
-        if (err) reject(err);
-        resolve(rows.rows);
-      }
-    );
+  for (let i = 0; i < data.length; i++) {
+    SQL += " OR profile_id = " + data[i].user_two_id;
+  }
+  return new Promise((resolve, reject) => {
+    pool.query("SELECT * FROM posts WHERE" + SQL, (err, rows) => {
+      if (err) reject(err);
+      resolve(rows.rows);
+    });
   });
 };
 
 //crear post
 const createPosts = (id, content, image) => {
-  if (image == undefined) {
-    return new Promise((resolve, reject) => {
-      pool.query(
-        "INSERT INTO profiles (id,content,date) VALUES($1,$2,CURRENT_DATE)",
-        [id, content],
-        (err, result) => {
-          if (err) reject(err);
-          if (result) {
-            resolve(result);
-          }
-        }
-      );
-    });
-  }
   return new Promise((resolve, reject) => {
     pool.query(
-      "INSERT INTO profiles (id,content,image,date) VALUES($1,$2,$3,CURRENT_DATE)",
-      [id, content, image],
+      "INSERT INTO posts (profile_id,content,post_date) VALUES($1,$2,CURRENT_DATE)",
+      [id, content],
       (err, result) => {
         if (err) reject(err);
         if (result) {

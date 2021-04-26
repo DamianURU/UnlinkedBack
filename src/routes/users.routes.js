@@ -53,7 +53,7 @@ routes.post("/api/verify", async (req, res) => {
   await client.verify
     .services(process.env.SERVICE_SID)
     .verificationChecks.create({
-      to: `+${req.body.phone}`,
+      to: `${req.body.phone}`,
       code: req.body.code,
     })
     .then((data) => {
@@ -67,14 +67,14 @@ routes.post("/api/verify", async (req, res) => {
 
 //modify profile
 routes.post("/api/modify", verifyToken, async (req, res) => {
-  if (req.body.password.length < 8) {
+  if (req.body.pass.length < 8) {
     res.json({ error: "Password must be more than 8 characters long" });
   }
   if (req.body.name.length < 2) {
     res.json({ error: "Name must be more than 2 characters long" });
   }
 
-  req.body.password = bcrypt.hashSync(req.body.password, 10);
+  req.body.pass = bcrypt.hashSync(req.body.pass, 10);
 
   const unfilledData = {
     body: req.body,
@@ -107,8 +107,8 @@ routes.post("/api/all", verifyToken, async (req, res) => {
 
 //obtener mis datos
 routes.post("/api/get", verifyToken, async (req, res) => {
-  const id = await Users.getById(req.body.token.data.id);
-  res.json({ data: id.rows });
+  const data = await Users.getById(req.token.data.id);
+  res.json({ data: data });
 });
 
 routes.post("/test", async (req, res) => {

@@ -7,8 +7,9 @@ const { verifyToken } = require("../config/auth");
 //obtener posts de amigos
 routes.post("/api/posts", verifyToken, async (req, res) => {
   const connects = await Connects.getConnect(req.token.data.id);
-  res.sendStatus(405);
-  //FALTA MOSTRAR
+  const data = connects.rows;
+  const posts = await Posts.getAllConnectPosts(data);
+  res.json({ posts: posts });
 });
 
 //obtener tus posts
@@ -22,10 +23,10 @@ routes.post("/api/posts/mine", verifyToken, async (req, res) => {
 routes.post("/api/posts/create", verifyToken, async (req, res) => {
   const posts = await Posts.createPosts(
     req.token.data.id,
-    req.body.content,
+    req.body.postText,
     req.body.image
   );
-  if ((posts = null)) res.sendStatus(405);
+  if (posts == null) res.sendStatus(405);
   res.sendStatus(200);
 });
 

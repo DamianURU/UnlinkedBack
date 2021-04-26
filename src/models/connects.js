@@ -17,7 +17,7 @@ const getPending = (user_one_id) => {
 const getConnect = (user_one_id) => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "SELECT * FROM contacts where state = 1 and user_one_id = $1",
+      "SELECT user_two_id FROM contacts where state = 1 and user_one_id = $1",
       [user_one_id],
       (err, rows) => {
         if (err) reject(err);
